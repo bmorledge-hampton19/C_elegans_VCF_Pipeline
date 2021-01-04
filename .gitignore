@@ -123,3 +123,18 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+##### My Ignores #####
+# Data files
+data/
+
+# Archived (usually deprecated) files
+archived_stuff/
+
+# VSC workspace files
+.vscode/
+*.code-workspace
+
+# Test files
+test.*
