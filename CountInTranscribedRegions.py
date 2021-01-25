@@ -8,7 +8,7 @@ from typing import List
 from nucperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog, Selections
 from nucperiodpy.helper_scripts.UsefulFileSystemFunctions import (Metadata, generateFilePath, getDataDirectory,
                                                                   DataTypeStr, getContext)
-    
+
 class MutationData:
 
     def __init__(self, line, acceptableChromosomes):
@@ -193,7 +193,7 @@ class CountsFileGenerator:
     def count(self):
         # Get data on the first mutation and gene and reconcile their chromosomes if necessary to start things off.
         # If either the mutation file or gene file is empty, make sure to bypass the check.
-        self.readNextMutation()          
+        self.readNextMutation()
         self.readNextGene()
         if self.currentMutation is None or self.currentGene is None:
             warnings.warn("Empty Mutation or Gene Positions file.  Output will most likely be unhelpful.")
