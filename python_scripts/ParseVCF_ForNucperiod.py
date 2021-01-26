@@ -3,7 +3,7 @@ import os, subprocess
 def main():
     
     # Specify relevant paths to be accessed later.
-    dataDirectory = os.path.join(os.path.dirname(os.path.abspath(__file__)),"data")
+    dataDirectory = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"data")
     SNVDirectory = os.path.join(dataDirectory, "Filtered_VCFS_all_text", "SNV")
     sampleInfoFilePath = os.path.join(dataDirectory, "sample_info.csv")
 

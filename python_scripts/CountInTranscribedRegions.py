@@ -290,7 +290,6 @@ def main():
     dialog = TkinterDialog(workingDirectory=getDataDirectory())
     dialog.createMultipleFileSelector("Mutation Files:",0,DataTypeStr.mutations + ".bed",("Bed Files",".bed"))
     dialog.createFileSelector("Gene Position File:", 1, ("Bed Files",".bed"))
-    dialog.createExitButtons(2,0)
 
     # Run the UI
     dialog.mainloop()

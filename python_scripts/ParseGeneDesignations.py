@@ -1,7 +1,7 @@
 import os, subprocess
 
 # Get the relevant paths for the input and output files.
-dataDirectory = os.path.join(os.path.dirname(os.path.abspath(__file__)),"data")
+dataDirectory = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"data")
 geneDesignationsToParseFilePath = os.path.join(dataDirectory,"C_elegans_gene_designations.tsv")
 geneDesignationsParsedFilePath = os.path.join(dataDirectory,"C_elegans_gene_designations.bed")
 geneNamesFilePath = os.path.join(dataDirectory, "C_elegans_gene_names.txt")
