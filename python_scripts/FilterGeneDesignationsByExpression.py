@@ -35,7 +35,7 @@ def filterGeneDesignationsByExpression(filteredGenesFilePath: str, unfilteredGen
 
 def main():
 
-    # Create a simple dialog for selecting the gene expression file.
+    # Create a simple dialog for selecting the filtered and unfiltered gene files.
     dialog = TkinterDialog(workingDirectory=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"))
     dialog.createFileSelector("Filtered Genes File", 0, ("Tab Separated Values File", ".tsv"))
     dialog.createFileSelector("Unfiltered Gene Designations File", 1, ("Bed File", ".bed"))
@@ -44,8 +44,7 @@ def main():
 
     if dialog.selections is None: quit()
 
-    # Retrieve the file paths to the peak files and pass them to the main funciton.  You know, like, the "main" function.
-    # Not this one since it's actually the main funciton, but the one that actually has the main functionality ohmygoodnesswhydoIcodelikethis
+    # Retrieve the selections and pass the relevant arguments to the primary function.
     filterGeneDesignationsByExpression(dialog.selections.getIndividualFilePaths()[0], 
                                        dialog.selections.getIndividualFilePaths()[1])
 

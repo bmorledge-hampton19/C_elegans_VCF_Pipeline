@@ -84,8 +84,7 @@ def main():
 
     if dialog.selections is None: quit()
 
-    # Retrieve the file paths to the peak files and pass them to the main funciton.  You know, like, the "main" function.
-    # Not this one since it's actually the main funciton, but the one that actually has the main functionality ohmygoodnesswhydoIcodelikethis
+    # Retrieve the selections and pass the relevant arguments to the primary function.
     findHighlyExpressedGenes(dialog.selections.getIndividualFilePaths()[0], dialog.selections.getDropdownSelections()[0])
 
 
