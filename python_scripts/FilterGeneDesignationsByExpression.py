@@ -1,5 +1,5 @@
 import os
-from nucperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
+from mutperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
 
 
 # Combines data from the filtered genes file path and the unfiltered gene designations file path to 

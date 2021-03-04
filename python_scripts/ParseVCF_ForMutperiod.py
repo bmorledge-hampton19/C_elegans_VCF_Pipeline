@@ -48,7 +48,7 @@ def main():
     # Genotype information is stored in each mutation line as the "cohort"
     for mutagen in mutagens:
 
-        mutagenFileDirectory = os.path.join(dataDirectory, "C_elegans_bed_SNVs_for_nucperiod", mutagen)
+        mutagenFileDirectory = os.path.join(dataDirectory, "C_elegans_bed_SNVs_for_mutperiod", mutagen)
         if not os.path.exists(mutagenFileDirectory): os.makedirs(mutagenFileDirectory)
         mutagenFilePath = os.path.join(mutagenFileDirectory, mutagen+"_custom_input.bed")
         mutagenFile = open(mutagenFilePath, 'w')

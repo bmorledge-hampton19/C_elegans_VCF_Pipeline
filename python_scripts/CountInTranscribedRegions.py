@@ -5,8 +5,8 @@
 
 import os, warnings
 from typing import List
-from nucperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog, Selections
-from nucperiodpy.helper_scripts.UsefulFileSystemFunctions import (Metadata, generateFilePath, getDataDirectory,
+from mutperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog, Selections
+from mutperiodpy.helper_scripts.UsefulFileSystemFunctions import (Metadata, generateFilePath, getDataDirectory,
                                                                   DataTypeStr, getContext)
 
 class MutationData:

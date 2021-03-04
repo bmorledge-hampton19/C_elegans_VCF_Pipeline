@@ -1,5 +1,5 @@
-from nucperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
-from nucperiodpy.helper_scripts.UsefulBioinformaticsFunctions import bedToFasta, reverseCompliment, FastaFileIterator
+from mutperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
+from mutperiodpy.helper_scripts.UsefulBioinformaticsFunctions import bedToFasta, reverseCompliment, FastaFileIterator
 from typing import List
 import os
 

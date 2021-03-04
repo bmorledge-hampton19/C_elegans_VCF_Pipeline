@@ -1,6 +1,6 @@
 import os, subprocess
 from typing import List, Dict
-from nucperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
+from mutperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
 
 # Given a file of RPKM/FPKM values, pull out the most highly expressed genes based on a given percent cutoff value.
 # Filtering may be specified to only use data from a specific tissue/cell type.
