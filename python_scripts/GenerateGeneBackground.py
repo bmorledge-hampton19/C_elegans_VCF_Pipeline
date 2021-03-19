@@ -34,7 +34,7 @@ def generateGeneBackground(geneDesignationsFilePaths: List[str], genomeFilePath)
                     lineChromosome = choppedUpLine[0]
                     lineGeneStart = int(choppedUpLine[1])
                     lineGeneEnd = int(choppedUpLine[2])
-                    lineStrand = choppedUpLine[3]
+                    lineStrand = choppedUpLine[5]
 
                     # Unless we are starting a new gene range, check to see if the gene region on this line overlaps with the current one.
                     if currentGeneRangeChromosome is not None:
@@ -50,8 +50,8 @@ def generateGeneBackground(geneDesignationsFilePaths: List[str], genomeFilePath)
                         else:
 
                             if currentGeneRangeStrand is not None:
-                                clearGeneRangesFile.write('\t'.join((currentGeneRangeChromosome, str(currentGeneRangeStart - 1), 
-                                                                     str(currentGeneRangeEnd + 1), currentGeneRangeStrand)) + '\n')
+                                clearGeneRangesFile.write('\t'.join((currentGeneRangeChromosome, str(currentGeneRangeStart - 1),
+                                                                     str(currentGeneRangeEnd + 1), '.', '.', currentGeneRangeStrand)) + '\n')
                             
                             # Don't forget to reset the chromosome variable to flag the rest for reassignment!
                             currentGeneRangeChromosome = None
@@ -67,7 +67,7 @@ def generateGeneBackground(geneDesignationsFilePaths: List[str], genomeFilePath)
                 # Do one last check so we don't miss the last gene range.
                 if currentGeneRangeStrand is not None:
                     clearGeneRangesFile.write('\t'.join((currentGeneRangeChromosome, str(currentGeneRangeStart - 1), 
-                                                         str(currentGeneRangeEnd + 1), currentGeneRangeStrand)) + '\n')
+                                                         str(currentGeneRangeEnd + 1), '.', '.', currentGeneRangeStrand)) + '\n')
 
 
         # Obtain trinucleotide counts for all the gene ranges.
