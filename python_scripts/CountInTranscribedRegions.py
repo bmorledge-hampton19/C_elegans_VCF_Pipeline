@@ -40,8 +40,7 @@ class GeneData:
         self.chromosome = choppedUpLine[0]
         self.startPos = int(choppedUpLine[1]) # 0 base
         self.endPos = int(choppedUpLine[2]) - 1 # Still 0 base 
-        reverser = {'+':'-', '-':'+'}
-        self.transcribedStrand = reverser[choppedUpLine[5]] # The transcribed strand (reversed because the coding strand is given)
+        self.transcribedStrand = {'+':'-', '-':'+'}[choppedUpLine[5]] # The transcribed strand (reversed because the coding strand is given)
 
 
 # Uses the given gene positions file and mutation file to count the number of mutations 
@@ -53,11 +52,13 @@ class GeneData:
 class CountsFileGenerator:
 
     def __init__(self, mutationFilePath, genePositionsFilePath, 
-                 transcribedRegionMutationCountsFilePath, acceptableChromosomes):
+                 transcribedRegionMutationCountsFilePath, acceptableChromosomes,
+                 mutationGenePosFilePath = None):
 
         # Open the mutation and gene positions files to compare against one another.
         self.mutationFile = open(mutationFilePath, 'r')
         self.genePosFile = open(genePositionsFilePath,'r')
+        self.mutationGenePosFilePath = mutationGenePosFilePath
 
         # Store the other arguments passed to the constructor
         self.acceptableChromosomes = acceptableChromosomes
@@ -68,6 +69,9 @@ class CountsFileGenerator:
         self.transcribedRegionMutationCounts = dict()
         self.nontranscribedRegionMutationCounts = dict() 
         self.intergenicAndAmbiguousMutationCounts = dict()
+
+        # If mutationGenePosFilePath is given, store absolute and relative gene positions as a list of tuples
+        if self.mutationGenePosFilePath is not None: self.mutationGenePos = list()
 
         # Keeps track of mutations that matched to a gene to check for overlap.
         self.mutationsInPotentialOverlap: List[MutationData] = list()
@@ -109,6 +113,20 @@ class CountsFileGenerator:
 
         # Check for mutations in overlapping regions between this gene and the last one.
         if self.currentGene is not None: self.checkMutationsInOverlap() 
+
+
+    # Using a given mutation and gene, determines the relative and absolute position of the mutation in the gene.
+    # Absolute is expressed as the number of nucleotides from the gene start (5'; 1-based)
+    # Relative is expressed as a porportion of the the bases in the gene at or behind (in the 5' direction) the mutation.
+    def getMutationGenePos(self, mutation: MutationData, gene: GeneData):
+
+        if gene.transcribedStrand == '+': absolutePos = mutation.position - gene.startPos + 1
+        else: absolutePos = gene.endPos - mutation.position + 1
+
+        geneLength = gene.endPos-gene.startPos + 1
+        relativePos = geneLength/absolutePos
+
+        return (absolutePos, relativePos)
 
 
     # Takes a mutation object and gene object which have unequal chromosomes and read through data until they are equal.
@@ -160,6 +178,10 @@ class CountsFileGenerator:
             # Add the mutation to the list of mutations in the current nucleosome
             self.mutationsInPotentialOverlap.append(self.currentMutation)
 
+            # If relevant, add the mutation's gene positions to the list.
+            if self.mutationGenePosFilePath is not None: 
+                self.mutationGenePos.append(self.getMutationGenePos(self.currentMutation, self.currentGene))
+
 
     # Check to see if any previous mutations called for previous genes are present in the current gene due to overlap.
     def checkMutationsInOverlap(self):    
@@ -172,6 +194,9 @@ class CountsFileGenerator:
         # Next, check all remaining mutations to see if their previous TS/NTS assignment matches with the new gene.
         for mutation in self.mutationsInPotentialOverlap:
             
+            assert self.mutationGenePosFilePath is None, "No gene overlap should exist while recording gene-relative mutation positions."
+                
+
             # Is the mutation within the upper bound of the gene (endPos)?
             # Does the call for the previous gene(s) match this gene?
             if (mutation.position <= self.currentGene.endPos and 
@@ -221,35 +246,56 @@ class CountsFileGenerator:
             # that they are looking at the same chromosome for the next iteration
             self.reconcileChromosomes()
 
+        # Close the input files.
+        self.mutationFile.close()
+        self.genePosFile.close()
+
 
     def writeResults(self):
-        # Write the results to the output file.
-        with open(self.transcribedRegionMutationCountsFilePath,'w') as TSMutationCountsFile:
-            
-            # Write the headers to the file.
-            TSMutationCountsFile.write('\t'.join(("Mutation_Context", "Mutant_Base", "TS_Counts",
-                                                  "NTS_Counts","Intergenic_And_Ambiguous_Counts",
-                                                  "NTS_to_TS_Ratio")) + '\n')
 
-            # Write the counts.
-            for context in sorted(self.intergenicAndAmbiguousMutationCounts.keys()):
+        if self.transcribedRegionMutationCountsFilePath is not None:
+            # Write the results to the output file.
+            with open(self.transcribedRegionMutationCountsFilePath,'w') as TSMutationCountsFile:
+                
+                # Write the headers to the file.
+                TSMutationCountsFile.write('\t'.join(("Mutation_Context", "Mutant_Base", "TS_Counts",
+                                                    "NTS_Counts","Intergenic_And_Ambiguous_Counts",
+                                                    "NTS_to_TS_Ratio")) + '\n')
 
-                TSCounts = self.transcribedRegionMutationCounts.setdefault(context,0)
-                NTSCounts = self.nontranscribedRegionMutationCounts.setdefault(context,0)
-                IACounts = self.intergenicAndAmbiguousMutationCounts[context]
+                # Write the counts.
+                for context in sorted(self.intergenicAndAmbiguousMutationCounts.keys(), key = lambda x: x[4] + x):
 
-                # Don't divide by 0 >:(
-                if TSCounts != 0: NTSOverTS = NTSCounts/TSCounts
-                else: NTSOverTS = "NA"
+                    TSCounts = self.transcribedRegionMutationCounts.setdefault(context,0)
+                    NTSCounts = self.nontranscribedRegionMutationCounts.setdefault(context,0)
+                    IACounts = self.intergenicAndAmbiguousMutationCounts[context]
 
-                TSMutationCountsFile.write('\t'.join((context.split('>')[0],context.split('>')[1],
-                                                      str(TSCounts), str(NTSCounts), str(IACounts), str(NTSOverTS))) + '\n')
-            
+                    # Don't divide by 0 >:(
+                    if TSCounts != 0: NTSOverTS = NTSCounts/TSCounts
+                    else: NTSOverTS = "NA"
+
+                    TSMutationCountsFile.write('\t'.join((context.split('>')[0],context.split('>')[1],
+                                                        str(TSCounts), str(NTSCounts), str(IACounts), str(NTSOverTS))) + '\n')
+
+        if self.mutationGenePosFilePath is not None:
+
+            # Write the results to the output file.
+            with open(self.mutationGenePosFilePath,'w') as mutationGenePosFile:
+
+                # Write the headers to the file.
+                mutationGenePosFile.write('\t'.join(("Absolute_Position","Relative_Position")) + '\n')
+
+                # Write the positions.
+                for pos in self.mutationGenePos:
+                    mutationGenePosFile.write('\t'.join((str(pos[0]), str(pos[1]))) + '\n')
+
 
 # Main functionality starts here.
-def countInTranscribedRegions(mutationFilePaths, genePositionsFilePath):
+def countInTranscribedRegions(mutationFilePaths, genePositionsFilePath: str, recordMutationGenePos, writeMutCounts):
 
     transcribedRegionMutationCountsFilePaths = list() # A list of paths to the output files generated by the function
+
+    if not recordMutationGenePos and not writeMutCounts:
+        warnings.warn("Nothing will be written... But here we go anyway!")
 
     # Loop through each given mutation file path, creating a corresponding transcribed region mutation count file for each.
     for mutationFilePath in mutationFilePaths:
@@ -269,17 +315,28 @@ def countInTranscribedRegions(mutationFilePaths, genePositionsFilePath):
         # Get metadata and use it to generate a path to the nucleosome positions file.
         metadata = Metadata(mutationFilePath)
 
-        # Generate the output file path
-        transcribedRegionMutationCountsFilePath = generateFilePath(directory = metadata.directory,
-                                                                   dataGroup = metadata.dataGroupName, 
-                                                                   fileExtension = ".tsv", dataType = "transcriptional_asymmetry")
+        # Generate the output file path for mutation counts.
+        if writeMutCounts:
+            transcribedRegionMutationCountsFilePath = generateFilePath(directory = metadata.directory,
+                                                                    dataGroup = metadata.dataGroupName, 
+                                                                    fileExtension = ".tsv", dataType = "transcriptional_asymmetry")
+            transcribedRegionMutationCountsFilePaths.append(transcribedRegionMutationCountsFilePath)
+        else: transcribedRegionMutationCountsFilePath = None
+
+        # If requested, generate the output file path for mutation positions relative to genes.
+        if recordMutationGenePos:
+            assert genePositionsFilePath.endswith("clear_gene_ranges.bed"), "Expected gene positioning file without overlap (\"...clear_gene_ranges.bed\")"
+            mutationGenePosFilePath = generateFilePath(directory = metadata.directory,
+                                                       dataGroup = metadata.dataGroupName, 
+                                                       fileExtension = ".tsv", dataType = "mutation_gene_pos")
+        else: mutationGenePosFilePath = None
 
         # Ready, set, go!
         counter = CountsFileGenerator(mutationFilePath, genePositionsFilePath, 
-                                      transcribedRegionMutationCountsFilePath, acceptableChromosomes)
+                                      transcribedRegionMutationCountsFilePath, acceptableChromosomes,
+                                      mutationGenePosFilePath)
         counter.count()
         counter.writeResults()
-        transcribedRegionMutationCountsFilePaths.append(transcribedRegionMutationCountsFilePath)
 
     return transcribedRegionMutationCountsFilePaths
 
@@ -290,6 +347,8 @@ def main():
     dialog = TkinterDialog(workingDirectory=getDataDirectory())
     dialog.createMultipleFileSelector("Mutation Files:",0,DataTypeStr.mutations + ".bed",("Bed Files",".bed"))
     dialog.createFileSelector("Gene Position File:", 1, ("Bed Files",".bed"))
+    dialog.createCheckbox("Record mutation positions relative to gene boundaries", 2, 0)
+    dialog.createCheckbox("Don't write mutation counts", 3, 0)
 
     # Run the UI
     dialog.mainloop()
@@ -301,7 +360,9 @@ def main():
     selections: Selections = dialog.selections
     mutationFilePaths = selections.getFilePathGroups()[0] # A list of mutation file paths
     genePositionsFilePath = selections.getIndividualFilePaths()[0] # The gene positions file path
+    recordMutationGenePos = selections.getToggleStates()[0]
+    writeMutCounts = not selections.getToggleStates()[1]
 
-    countInTranscribedRegions(mutationFilePaths, genePositionsFilePath)
+    countInTranscribedRegions(mutationFilePaths, genePositionsFilePath, recordMutationGenePos, writeMutCounts)
 
 if __name__ == "__main__": main()
