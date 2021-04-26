@@ -1,5 +1,5 @@
 from mutperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
-from mutperiodpy.helper_scripts.UsefulBioinformaticsFunctions import bedToFasta, reverseCompliment, FastaFileIterator
+from mutperiodpy.helper_scripts.UsefulBioinformaticsFunctions import bedToFasta, reverseCompliment, FastaFileIterator, isPurine
 from typing import List
 import os
 
@@ -86,10 +86,12 @@ def generateGeneBackground(geneDesignationsFilePaths: List[str], genomeFilePath)
 
                 for i in range(0, len(fastaEntry.sequence) - 2):
 
-                    trinucleotideNTS = fastaEntry.sequence[i:i+3]
-                    trinucleotideTS = reverseCompliment(trinucleotideNTS)
-                    trinucleotideCountsNTS[trinucleotideNTS] = trinucleotideCountsNTS.setdefault(trinucleotideNTS, 0) + 1
-                    trinucleotideCountsTS[trinucleotideTS] = trinucleotideCountsTS.setdefault(trinucleotideTS, 0) + 1
+                    trinucleotide = fastaEntry.sequence[i:i+3]
+                    if isPurine(trinucleotide[1]):
+                        trinucleotide = reverseCompliment(trinucleotide)
+                        trinucleotideCountsTS[trinucleotide] = trinucleotideCountsTS.setdefault(trinucleotide, 0) + 1
+                    else: 
+                        trinucleotideCountsNTS[trinucleotide] = trinucleotideCountsNTS.setdefault(trinucleotide, 0) + 1
 
         # Write the background trinucleotide counts to a separate file.
         trinucleotideBackgroundCountsFilePath = clearGeneRangesFilePath.rsplit("clear_gene_ranges.bed",1)[0] + "background_gene_trinuc_counts.tsv"
@@ -101,7 +103,7 @@ def generateGeneBackground(geneDesignationsFilePaths: List[str], genomeFilePath)
 
             # Write the counts.
 
-            for trinucleotide in sorted(trinucleotideCountsNTS.keys() | trinucleotideCountsTS.keys()):
+            for trinucleotide in sorted(trinucleotideCountsNTS.keys() | trinucleotideCountsTS.keys(), key = lambda x: x[1] + x):
 
                 trinucleotideBackgroundCountsFile.write('\t'.join((trinucleotide, str(trinucleotideCountsNTS.setdefault(trinucleotide, 0)),
                                                                    str(trinucleotideCountsTS.setdefault(trinucleotide, 0)))) + '\n')
