@@ -1,5 +1,5 @@
 # This script takes a mutation file and the coordinates for gene regions (and the transcribed strand) 
-# and calculates how many mutations occured transcribed vs. non-transcribed strands.
+# and calculates how many mutations occured in transcribed vs. non-transcribed strands.
 # NOTE:  Both input files must be sorted for this script to run properly. 
 #        (Sorted first by chromosome (string) and then by nucleotide position (numeric))
 
