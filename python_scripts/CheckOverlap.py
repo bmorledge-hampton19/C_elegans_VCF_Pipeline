@@ -1,6 +1,6 @@
 import os
 from typing import List, Dict
-from mutperiodpy.Tkinter_scripts.TkinterDialog import TkinterDialog
+from benbiohelpers.TkWrappers.TkinterDialog import TkinterDialog
 
 
 # Given a list of gene designations file paths, check the amount of overlap between genes in each unique pair.
